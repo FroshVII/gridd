@@ -87,7 +87,7 @@ impl Vector {
     };
 
     /// Get the coordinate offset from the anchor by a given vector
-    fn ocoord(&self, (col, row): Coord) -> Option<Coord> {
+    pub fn ocoord(&self, (col, row): Coord) -> Option<Coord> {
         let c = self.col_offset + (col as i32);
         let r = self.row_offset + (row as i32);
 
