@@ -63,6 +63,10 @@ impl From<(i32, i32)> for Vector {
 }
 
 impl Vector {
+    //////////////////////////////////
+    // Constants
+    //////////////////////////////////
+
     /// Northern unit vector
     pub const NORTH: Vector = Vector {
         col_offset: 0,
@@ -96,6 +100,17 @@ impl Vector {
         } else {
             None
         }
+    }
+
+    //////////////////////////////////
+    // Instantiation
+    //////////////////////////////////
+
+    pub fn new(n: i32, e: i32, s: i32, w: i32) -> Self {
+        Vector::NORTH * n
+        + Vector::EAST * e
+        + Vector::SOUTH * s
+        + Vector::WEST * w
     }
 }
 
