@@ -53,6 +53,14 @@ impl Mul<i32> for Vector {
     }
 }
 
+impl Mul<Vector> for i32 {
+    type Output = Vector;
+
+    fn mul(self, vec: Vector) -> Self::Output {
+        vec * self
+    }
+}
+
 impl From<(i32, i32)> for Vector {
     fn from((c, r): (i32, i32)) -> Self {
         Self {
@@ -106,6 +114,7 @@ impl Vector {
     // Instantiation
     //////////////////////////////////
 
+    /// Create a new vector from cardinal vectors
     pub fn new(n: i32, e: i32, s: i32, w: i32) -> Self {
         Vector::NORTH * n
         + Vector::EAST * e
