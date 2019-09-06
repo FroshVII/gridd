@@ -7,8 +7,9 @@ documentation = "https://docs.rs/gridd"
 repository = "https://github.com/cmarcbs7/gridd"
 description = "A generic, dirt-simple, two-dimensional grid."
 keywords = [
-    "2D",
+    "2d",
     "grid",
+    "2d-grid",
 ]
 categories = [
     "data-structures",
