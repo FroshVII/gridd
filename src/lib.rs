@@ -208,6 +208,15 @@ impl<T> StaticGrid<T> {
     pub fn contains(&self, (col, row): Coord) -> bool {
         col < self.col_count && row < self.row_count
     }
+
+    //////////////////////////////////
+    // Advanced Operations
+    //////////////////////////////////
+
+    /// Return a transposition of the grid
+    pub fn transposition(&self) -> Self {
+        unimplemented!();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
