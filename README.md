@@ -1,5 +1,7 @@
 # Gridd
-A two-dimensional grid representation
+A generic, dirt-simple, two-dimensional grid.
+- [crate](https://crates.io/crates/gridd)
+- [docs]("https://docs.rs/gridd")
 
 ## License
 Dual-licensed to be compatible with the Rust project.

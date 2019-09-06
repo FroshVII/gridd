@@ -3,7 +3,15 @@ name = "gridd"
 version = "0.1.0"
 authors = ["cmarcbs7 <smith7@uchicago.edu>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+documentation = "https://docs.rs/gridd"
+repository = "https://github.com/cmarcbs7/gridd"
+description = "A generic, dirt-simple, two-dimensional grid."
+keywords = [
+    "2D",
+    "grid",
+]
+categories = [
+    "data-structures",
+]
+license = "Apache-2.0 OR MIT"
+maintenance = { status = "actively-developed" }
