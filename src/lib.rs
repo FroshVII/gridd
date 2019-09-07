@@ -1,4 +1,22 @@
 //! A generic, dirt-simple, two-dimensional grid.
+//!
+//! # Coordinates
+//! Grid entries are accessed with the `Coord` type, which is of the form
+/// (column, row), where column >= 0 and row >= 0.
+///
+/// # Vectors
+/// Instead of offering pre-defined relational getters/iterators such as
+/// `neighbors` or `diagonals`, Gridd provides `Vector`s for users to build
+/// their own spatial relationship methods. `Vector`s are just `struct`s with
+/// positive or negative `col_offset` and `row_offset` fields, enabling the
+/// codification of arbitrary relations.
+///
+/// Scalar multiplication is reflexively defined on `Vectors` for `i32`
+/// values and addition/subtraction is defined between vectors, each in the
+/// traditional manner.
+///
+/// # Static Grids
+/// Currently, Gridd only supports grids of a fixed size.
 
 use std::ops::{Add, Mul, Sub};
 
@@ -6,15 +24,15 @@ use std::ops::{Add, Mul, Sub};
 // Type Aliases
 //////////////////////////////////////////////////////////////////////////////
 
-/// Zero-indexed coordinate of the form (column, row).
+/// Coordinates of the form (column, row), where column >= 0 and row >= 0.
 pub type Coord = (usize, usize);
 
 //////////////////////////////////////////////////////////////////////////////
 // 2D Vectors
 //////////////////////////////////////////////////////////////////////////////
 
-/// Two-dimensional offset vectors.
-#[derive(Debug)]
+/// A two-dimensional vector used to relate grid elements spatially.
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Vector {
     pub col_offset: i32,
     pub row_offset: i32,
@@ -75,35 +93,58 @@ impl Vector {
     // Constants
     //////////////////////////////////
 
-    /// Northern unit vector
+    /// Northern unit vector: (col: +0, row: -1).
     pub const NORTH: Vector = Vector {
         col_offset: 0,
-        row_offset: -1
+        row_offset: -1,
     };
 
-    /// Eastern unit vector
+    /// Eastern unit vector: (col: +1, row: +0).
     pub const EAST: Vector = Vector {
         col_offset: 1,
-        row_offset: 0
+        row_offset: 0,
     };
 
-    /// Southern unit vector
+    /// Southern unit vector: (col: +0, row: +1).
     pub const SOUTH: Vector = Vector {
         col_offset: 0,
-        row_offset: 1
+        row_offset: 1,
     };
 
-    /// Western unit vector
-    pub const WEST: Vector = Vector { col_offset: -1,
-        row_offset: 0
+    /// Western unit vector: (col: -1, row: +0).
+    pub const WEST: Vector = Vector {
+        col_offset: -1,
+        row_offset: 0,
     };
 
-    /// Get the coordinate offset from the anchor by a given vector
-    pub fn ocoord(&self, (col, row): Coord) -> Option<Coord> {
+    /// Get the coordinate pointed to by a `Vector` from a given `Coord`.
+    ///
+    /// Returns `None` when either `Coord` component would be negative.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use gridd::{Coord, Vector};
+    ///
+    /// let coord: Coord = (3, 5);
+    ///
+    /// let v1 = Vector {
+    ///     col_offset: -3,
+    ///     row_offset: 2,
+    /// };
+    /// let v2 = Vector {
+    ///     col_offset: -4,
+    ///     row_offset: 5,
+    /// };
+    ///
+    /// assert_eq!(Some((0, 7)), v1.rcoord(coord));
+    /// assert_eq!(None, v2.rcoord(coord));
+    /// ```
+    pub fn rcoord(&self, (col, row): Coord) -> Option<Coord> {
         let c = self.col_offset + (col as i32);
         let r = self.row_offset + (row as i32);
 
-        if c > 0 && r > 0 {
+        if c >= 0 && r >= 0 {
             Some((c as usize, r as usize))
         } else {
             None
@@ -114,8 +155,23 @@ impl Vector {
     // Instantiation
     //////////////////////////////////
 
-    /// Create a new vector from cardinal vectors
-    pub fn new(n: i32, e: i32, s: i32, w: i32) -> Self {
+    /// Create a new `Vector` from the sum of cardinal vectors.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use gridd::Vector;
+    ///
+    /// assert_eq!(
+    ///     Vector::cardinal_sum(1, 0, 1, 0),
+    ///     Vector::NORTH + Vector::SOUTH
+    /// );
+    /// assert_eq!(
+    ///     Vector::cardinal_sum(0, 2, 0, 3),
+    ///     2 * Vector::EAST + 3 * Vector::WEST
+    /// );
+    /// ```
+    pub fn cardinal_sum(n: i32, e: i32, s: i32, w: i32) -> Self {
         Vector::NORTH * n
         + Vector::EAST * e
         + Vector::SOUTH * s
@@ -128,7 +184,7 @@ impl Vector {
 //////////////////////////////////////////////////////////////////////////////
 
 /// Two-dimensional, zero-indexed grid. Cannot change dimensions.
-#[derive(Debug)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct StaticGrid<T> {
     col_count: usize,
     row_count: usize,
@@ -200,7 +256,7 @@ impl<T> StaticGrid<T> {
 
     /// Get an immutable reference to a cell's value offset from an anchor.
     pub fn rget(&self, anchor: Coord, vec: Vector) -> Option<&T> {
-        match vec.ocoord(anchor) {
+        match vec.rcoord(anchor) {
             Some(coord) => self.get(coord),
             _ => None,
         }
@@ -208,7 +264,7 @@ impl<T> StaticGrid<T> {
 
     /// Get a mutable reference to a cell's value offset from an anchor.
     pub fn rget_mut(&mut self, anchor: Coord, vec: Vector) -> Option<&mut T> {
-        match vec.ocoord(anchor) {
+        match vec.rcoord(anchor) {
             Some(coord) => self.get_mut(coord),
             _ => None,
         }
