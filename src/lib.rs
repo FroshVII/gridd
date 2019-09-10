@@ -215,7 +215,7 @@ impl Offset {
 // Fixed-Size 2D Grids
 //////////////////////////////////////////////////////////////////////////////
 
-/// Two-dimensional, non-resizeable, zero-indexed grid.
+/// A two-dimensional grid.
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Grid<T> {
     col_count: usize,
