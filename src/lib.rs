@@ -290,12 +290,18 @@ impl<T> StaticGrid<T> {
     }
 
     //////////////////////////////////
-    // Advanced Operations
+    // Other Operations
     //////////////////////////////////
 
     /// Return a transposition of the grid
     pub fn transposition(&self) -> Self {
         unimplemented!();
+    }
+
+    /// Get the underlying `Vec` representation.
+    pub fn as_vec(&mut self) -> &mut Vec<T> {
+        unimplemented!();
+        // also impl Iterator for Gridd
     }
 }
 
