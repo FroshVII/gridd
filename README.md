@@ -8,7 +8,7 @@ Minimalist implementation of two-dimensional grids.
 Add the following to your project's `Cargo.toml` file under `[dependencies]`:
 
 ```toml
-gridd = "0.3.0"
+gridd = "0.3.1"
 ```
 
 Check out [Gridd's Cargo page](https://crates.io/crates/gridd) for
