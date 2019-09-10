@@ -49,8 +49,8 @@
 //! }
 //! ```
 //!
-//! It's also worth noting that Gridd's approach doesn't impose order on the
-//! produced `neighbors` method, offering greater flexibility.
+//! It's also worth noting that Gridd's approach doesn't impose any order on
+//! the final `knight_moves` method, offering greater flexibility.
 //!
 //! Implementations are provided for scalar multiplication, vector addition,
 //! and vector subtraction.
