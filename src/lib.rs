@@ -2,21 +2,21 @@
 //!
 //! # Coordinates
 //! Grid entries are accessed with the `Coord` type, which is of the form
-/// (column, row), where column >= 0 and row >= 0.
-///
-/// # Vectors
-/// Instead of offering pre-defined relational getters/iterators such as
-/// `neighbors` or `diagonals`, Gridd provides `Vector`s for users to build
-/// their own spatial relationship methods. `Vector`s are just `struct`s with
-/// positive or negative `col_offset` and `row_offset` fields, enabling the
-/// codification of arbitrary relations.
-///
-/// Scalar multiplication is reflexively defined on `Vectors` for `i32`
-/// values and addition/subtraction is defined between vectors, each in the
-/// traditional manner.
-///
-/// # Static Grids
-/// Currently, Gridd only supports grids of a fixed size.
+//! (column, row), where column >= 0 and row >= 0.
+//!
+//! # Vectors
+//! Instead of offering pre-defined relational getters/iterators such as
+//! `neighbors` or `diagonals`, Gridd provides `Vector`s for users to build
+//! their own spatial relationship methods. `Vector`s are just `struct`s with
+//! positive or negative `col_offset` and `row_offset` fields, enabling the
+//! codification of arbitrary relations.
+//!
+//! Scalar multiplication is reflexively defined on `Vectors` for `i32`
+//! values and addition/subtraction is defined between vectors, each in the
+//! traditional manner.
+//!
+//! # Static Grids
+//! Currently, Gridd only supports grids of a fixed size.
 
 use std::ops::{Add, Mul, Sub};
 
@@ -128,16 +128,10 @@ impl Vector {
     ///
     /// let coord: Coord = (3, 5);
     ///
-    /// let v1 = Vector {
-    ///     col_offset: -3,
-    ///     row_offset: 2,
-    /// };
-    /// let v2 = Vector {
-    ///     col_offset: -4,
-    ///     row_offset: 5,
-    /// };
-    ///
+    /// let v1 = Vector::from((-3, 2));
     /// assert_eq!(Some((0, 7)), v1.rcoord(coord));
+    ///
+    /// let v2 = Vector::from((-4, 5));
     /// assert_eq!(None, v2.rcoord(coord));
     /// ```
     pub fn rcoord(&self, (col, row): Coord) -> Option<Coord> {
@@ -166,6 +160,7 @@ impl Vector {
     ///     Vector::cardinal_sum(1, 0, 1, 0),
     ///     Vector::NORTH + Vector::SOUTH
     /// );
+    ///
     /// assert_eq!(
     ///     Vector::cardinal_sum(0, 2, 0, 3),
     ///     2 * Vector::EAST + 3 * Vector::WEST
