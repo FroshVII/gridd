@@ -20,6 +20,13 @@
 //! }
 //!
 //! impl<T> ChessGame<T> {
+//!     pub(crate) fn rotate(os: &mut Offset) {
+//!         let new_c = os.row_offset;
+//!
+//!         os.row_offset = os.col_offset;
+//!         os.col_offset = new_c * (-1);
+//!     }
+//!
 //!     pub fn knight_moves(&self, rook_pos: Coord) -> Vec<&T> {
 //!         let mut coords = Vec::new();
 //!
@@ -33,8 +40,8 @@
 //!             if let Some(square_data) = self.board.rget(rook_pos, move2) {
 //!                 coords.push(square_data);
 //!             }
-//!             move1.rotate_cw();
-//!             move2.rotate_cc();
+//!             Self::rotate(&mut move1);
+//!             Self::rotate(&mut move2);
 //!         }
 //!
 //!         coords
@@ -201,46 +208,6 @@ impl Offset {
         } else {
             None
         }
-    }
-
-    /// Switch the row and column offset components of an `Offset`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use gridd::Offset;
-    ///
-    /// let mut vec = Offset::from((3, 2));
-    ///
-    /// assert_eq!(
-    ///     Offset { col_offset: 3, row_offset: 2 },
-    ///     vec,
-    /// );
-    ///
-    /// vec.flip();
-    ///
-    /// assert_eq!(
-    ///     Offset { col_offset: 2, row_offset: 3 },
-    ///     vec,
-    /// );
-    /// ```
-    pub fn flip(&mut self) {
-        let new_c = self.row_offset;
-
-        self.row_offset = self.col_offset;
-        self.col_offset = new_c;
-    }
-
-    /// Rotate an `Offset` clockwise on a Cartesian plane.
-    pub fn rotate_cw(&mut self) {
-        self.flip();
-        self.row_offset = self.row_offset * (-1);
-    }
-
-    /// Rotate an `Offset` counterclockwise on a Cartesian plane.
-    pub fn rotate_cc(&mut self) {
-        self.flip();
-        self.col_offset = self.col_offset * (-1);
     }
 }
 
