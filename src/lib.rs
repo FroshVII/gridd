@@ -217,7 +217,7 @@ where
     // Other Operations
     //////////////////////////////////
 
-    /// Return a transposition of the grid
+    /// Perform a transposition.
     pub fn transpose(&self) -> Self {
         if let Some(&val) = self.get((0, 0)) {
             let mut new_grid = Self::new(self.row_count, self.col_count, val);
@@ -255,17 +255,17 @@ impl<T> StaticGrid<T> {
     // Get & Set
     //////////////////////////////////
 
-    /// Get a grid's column count.
+    /// Get a `Grid`'s column count.
     pub fn col_count(&self) -> usize {
         self.col_count
     }
 
-    /// Get a grid's row count.
+    /// Get a `Grid`'s row count.
     pub fn row_count(&self) -> usize {
         self.row_count
     }
 
-    /// Get an immutable reference to a cell's value.
+    /// Get an immutable reference to some cell.
     pub fn get(&self, coord: Coord) -> Option<&T>
     {
         if self.contains(coord) {
@@ -277,7 +277,7 @@ impl<T> StaticGrid<T> {
         }
     }
 
-    /// Get a mutable reference to a cell's value.
+    /// Get a mutable reference to some cell.
     pub fn get_mut(&mut self, coord: Coord) -> Option<&mut T> {
         if self.contains(coord) {
             let index = self.flat_index(coord);
@@ -288,7 +288,8 @@ impl<T> StaticGrid<T> {
         }
     }
 
-    /// Get an immutable reference to a cell's value offset from an anchor.
+    /// Get an immutable reference to the cell with the given positional
+    /// relationship to the provided coordinate.
     pub fn rget(&self, anchor: Coord, vec: Vector) -> Option<&T> {
         match vec.rcoord(anchor) {
             Some(coord) => self.get(coord),
@@ -296,7 +297,8 @@ impl<T> StaticGrid<T> {
         }
     }
 
-    /// Get a mutable reference to a cell's value offset from an anchor.
+    /// Get a mutable reference to the cell with the given positional
+    /// relationship to the provided coordinate.
     pub fn rget_mut(&mut self, anchor: Coord, vec: Vector) -> Option<&mut T> {
         match vec.rcoord(anchor) {
             Some(coord) => self.get_mut(coord),
@@ -315,7 +317,7 @@ impl<T> StaticGrid<T> {
     }
 
     /// Set the value of a cell with the given positional relationship to
-    /// another coordinate.
+    /// the provided coordinate.
     pub fn rset(&mut self, coord: Coord, vec: Vector, new_val: T) {
         if let Some(rcoord) = vec.rcoord(coord) {
             self.set(rcoord, new_val);
