@@ -157,8 +157,8 @@ impl Vector {
     /// use gridd::Vector;
     ///
     /// assert_eq!(
-    ///     Vector::cardinal_sum(1, 0, 1, 0),
-    ///     Vector::NORTH + Vector::SOUTH
+    ///     Vector::cardinal_sum(1, 0, -1, 0),
+    ///     Vector::NORTH - Vector::SOUTH
     /// );
     ///
     /// assert_eq!(
