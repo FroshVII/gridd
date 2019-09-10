@@ -183,7 +183,7 @@ impl Vector {
 // Fixed-Size 2D Grids
 //////////////////////////////////////////////////////////////////////////////
 
-/// Two-dimensional, zero-indexed grid. Cannot change dimensions.
+/// Two-dimensional, non-resizeable, zero-indexed grid.
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct StaticGrid<T> {
     col_count: usize,
@@ -191,24 +191,16 @@ pub struct StaticGrid<T> {
     data: Vec<T>,
 }
 
-impl<T> StaticGrid<T> {
-    //////////////////////////////////
-    // Utilities
-    //////////////////////////////////
-
-    /// Get the flat-vector index from the column and row indices.
-    fn flat_index(&self, (col, row): Coord) -> usize {
-        col + self.col_count * row
-    }
-
+impl<T> StaticGrid<T>
+where
+    T: Copy,
+{
     //////////////////////////////////
     // Instantiation
     //////////////////////////////////
 
     /// Create a new `StaticGrid` populated with a default value.
     pub fn new(col_count: usize, row_count: usize, default: T) -> Self
-    where
-        T: Copy,
     {
         let capactiy = row_count * col_count;
 
@@ -222,18 +214,65 @@ impl<T> StaticGrid<T> {
     /// Create a new `StaticGrid` in a square shape, populated with a default
     /// value.
     pub fn square(side_len: usize, default: T) -> Self
-    where
-        T: Copy,
     {
         Self::new(side_len, side_len, default)
+    }
+
+    //////////////////////////////////
+    // Other Operations
+    //////////////////////////////////
+
+    /// Return a transposition of the grid
+    pub fn transpose(&self) -> Self {
+        if let Some(&val) = self.get((0, 0)) {
+            let mut new_grid = Self::new(self.row_count, self.col_count, val);
+
+            for src_row in 0..self.row_count {
+                for src_col in 0..self.col_count {
+                    if let Some(&val) = self.get((src_col, src_row)) {
+                        new_grid.set((src_row, src_col), val)
+                    }
+                }
+            }
+
+            new_grid
+        } else {
+            Self {
+                col_count: 0,
+                row_count: 0,
+                data: Vec::new(),
+            }
+        }
+    }
+}
+
+impl<T> StaticGrid<T> {
+    //////////////////////////////////
+    // Utilities
+    //////////////////////////////////
+
+    /// Get the flat-vector index from the column and row indices.
+    fn flat_index(&self, (col, row): Coord) -> usize {
+        col + self.col_count * row
     }
 
     //////////////////////////////////
     // Get & Set
     //////////////////////////////////
 
+    /// Get a grid's column count.
+    pub fn col_count(&self) -> usize {
+        self.col_count
+    }
+
+    /// Get a grid's row count.
+    pub fn row_count(&self) -> usize {
+        self.row_count
+    }
+
     /// Get an immutable reference to a cell's value.
-    pub fn get(&self, coord: Coord) -> Option<&T> {
+    pub fn get(&self, coord: Coord) -> Option<&T>
+    {
         if self.contains(coord) {
             let index = self.flat_index(coord);
 
@@ -288,21 +327,6 @@ impl<T> StaticGrid<T> {
     pub fn contains(&self, (col, row): Coord) -> bool {
         col < self.col_count && row < self.row_count
     }
-
-    //////////////////////////////////
-    // Other Operations
-    //////////////////////////////////
-
-    /// Return a transposition of the grid
-    pub fn transposition(&self) -> Self {
-        unimplemented!();
-    }
-
-    /// Get the underlying `Vec` representation.
-    pub fn as_vec(&mut self) -> &mut Vec<T> {
-        unimplemented!();
-        // also impl Iterator for Gridd
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -350,5 +374,30 @@ mod tests {
 
         assert_eq!(Some(&'b'), grid.rget((2, 4), Vector::NORTH));
         assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Vector::NORTH));
+    }
+
+    #[test]
+    fn test_transpose() {
+        let src_col = 3;
+        let src_row = 4;
+
+        let mut grid = StaticGrid::new(src_col, src_row, (0, 0));
+
+        for i in 0..src_col {
+            for j in 0..src_row {
+                grid.set((i, j), (i, j));
+            }
+        }
+
+        let tgrid = grid.transpose();
+
+        assert_eq!(4, tgrid.col_count());
+        assert_eq!(3, tgrid.row_count());
+
+        for i in 0..src_col {
+            for j in 0..src_row {
+                assert_eq!(tgrid.get((j, i)), grid.get((i, j)));
+            }
+        }
     }
 }

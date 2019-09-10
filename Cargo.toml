@@ -1,6 +1,6 @@
 [package]
 name = "gridd"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["cmarcbs7 <smith7@uchicago.edu>"]
 edition = "2018"
 documentation = "https://docs.rs/gridd"
