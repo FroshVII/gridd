@@ -1,22 +1,52 @@
 //! A generic, dirt-simple, two-dimensional grid.
 //!
-//! # Coordinates
-//! Grid entries are accessed with the `Coord` type, which is of the form
-//! (column, row), where column >= 0 and row >= 0.
+//! # Grids & Coordinates
+//! The `Grid` structure represents a two-dimensional grid containing
+//! arbitrary data within its cells. Data is accessed via the `Coord` type,
+//! which is equivalent to the `(usize, usize)` type. Cell indices are of the
+//! form (column, row) where column and row are non-negative values.
 //!
-//! # Vectors
-//! Instead of offering pre-defined relational getters/iterators such as
-//! `neighbors` or `diagonals`, Gridd provides `Vector`s for users to build
-//! their own spatial relationship methods. `Vector`s are just `struct`s with
-//! positive or negative `col_offset` and `row_offset` fields, enabling the
-//! codification of arbitrary relations.
+//! # Offset Vectors
+//! Gridd offers `Offset`s for working with positional relationships. This
+//! allows the API to stay small while still offering a more convenient
+//! abstraction for relational methods and iterators. Here's how you might
+//! implement a `knight_moves` method using Gridd:
 //!
-//! Scalar multiplication is reflexively defined on `Vectors` for `i32`
-//! values and addition/subtraction is defined between vectors, each in the
-//! traditional manner.
+//! ```
+//! use gridd::{Coord, Grid, Offset};
 //!
-//! # Static Grids
-//! Currently, Gridd only supports grids of a fixed size.
+//! struct ChessGame<T> {
+//!     board: Grid<T>
+//! }
+//!
+//! impl<T> ChessGame<T> {
+//!     pub fn knight_moves(&self, rook_pos: Coord) -> Vec<&T> {
+//!         let mut coords = Vec::new();
+//!
+//!         let mut move1 = Offset::from((2, 1));
+//!         let mut move2 = Offset::from((1, 2));
+//!
+//!         for _ in 0..4 {
+//!             if let Some(square_data) = self.board.rget(rook_pos, move1) {
+//!                 coords.push(square_data);
+//!             }
+//!             if let Some(square_data) = self.board.rget(rook_pos, move2) {
+//!                 coords.push(square_data);
+//!             }
+//!             move1.rotate_cw();
+//!             move2.rotate_cc();
+//!         }
+//!
+//!         coords
+//!     }
+//! }
+//! ```
+//!
+//! It's also worth noting that Gridd's approach doesn't impose order on the
+//! produced `neighbors` method, offering greater flexibility.
+//!
+//! Implementations are provided for scalar multiplication, vector addition,
+//! and vector subtraction.
 
 use std::ops::{Add, Mul, Sub};
 
@@ -28,17 +58,17 @@ use std::ops::{Add, Mul, Sub};
 pub type Coord = (usize, usize);
 
 //////////////////////////////////////////////////////////////////////////////
-// 2D Vectors
+// Offset Vectors
 //////////////////////////////////////////////////////////////////////////////
 
-/// A two-dimensional vector used to relate grid elements spatially.
+/// A two-dimensional offset vector used to relate grid elements spatially.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Vector {
+pub struct Offset {
     pub col_offset: i32,
     pub row_offset: i32,
 }
 
-impl Add for Vector {
+impl Add for Offset {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -49,7 +79,7 @@ impl Add for Vector {
     }
 }
 
-impl Sub for Vector {
+impl Sub for Offset {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -60,7 +90,7 @@ impl Sub for Vector {
     }
 }
 
-impl Mul<i32> for Vector {
+impl Mul<i32> for Offset {
     type Output = Self;
 
     fn mul(self, scalar: i32) -> Self::Output {
@@ -71,15 +101,15 @@ impl Mul<i32> for Vector {
     }
 }
 
-impl Mul<Vector> for i32 {
-    type Output = Vector;
+impl Mul<Offset> for i32 {
+    type Output = Offset;
 
-    fn mul(self, vec: Vector) -> Self::Output {
+    fn mul(self, vec: Offset) -> Self::Output {
         vec * self
     }
 }
 
-impl From<(i32, i32)> for Vector {
+impl From<(i32, i32)> for Offset {
     fn from((c, r): (i32, i32)) -> Self {
         Self {
             col_offset: c,
@@ -88,50 +118,78 @@ impl From<(i32, i32)> for Vector {
     }
 }
 
-impl Vector {
+impl Offset {
     //////////////////////////////////
     // Constants
     //////////////////////////////////
 
     /// Northern unit vector: (col: +0, row: -1).
-    pub const NORTH: Vector = Vector {
+    pub const NORTH: Offset = Offset {
         col_offset: 0,
         row_offset: -1,
     };
 
     /// Eastern unit vector: (col: +1, row: +0).
-    pub const EAST: Vector = Vector {
+    pub const EAST: Offset = Offset {
         col_offset: 1,
         row_offset: 0,
     };
 
     /// Southern unit vector: (col: +0, row: +1).
-    pub const SOUTH: Vector = Vector {
+    pub const SOUTH: Offset = Offset {
         col_offset: 0,
         row_offset: 1,
     };
 
     /// Western unit vector: (col: -1, row: +0).
-    pub const WEST: Vector = Vector {
+    pub const WEST: Offset = Offset {
         col_offset: -1,
         row_offset: 0,
     };
 
-    /// Get the coordinate pointed to by a `Vector` from a given `Coord`.
+    //////////////////////////////////
+    // Operations
+    //////////////////////////////////
+
+    /// Create a new `Offset` from the sum of cardinal vectors.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use gridd::Offset;
+    ///
+    /// assert_eq!(
+    ///     Offset::cardinal_sum(1, 0, -1, 0),
+    ///     Offset::NORTH - Offset::SOUTH
+    /// );
+    ///
+    /// assert_eq!(
+    ///     Offset::cardinal_sum(0, 2, 0, 3),
+    ///     2 * Offset::EAST + 3 * Offset::WEST
+    /// );
+    /// ```
+    pub fn cardinal_sum(n: i32, e: i32, s: i32, w: i32) -> Self {
+        Offset::NORTH * n
+        + Offset::EAST * e
+        + Offset::SOUTH * s
+        + Offset::WEST * w
+    }
+
+    /// Get the coordinate pointed to by an `Offset` from a given `Coord`.
     ///
     /// Returns `None` when either `Coord` component would be negative.
     ///
     /// # Examples
     ///
     /// ```
-    /// use gridd::{Coord, Vector};
+    /// use gridd::{Coord, Offset};
     ///
     /// let coord: Coord = (3, 5);
     ///
-    /// let v1 = Vector::from((-3, 2));
+    /// let v1 = Offset::from((-3, 2));
     /// assert_eq!(Some((0, 7)), v1.rcoord(coord));
     ///
-    /// let v2 = Vector::from((-4, 5));
+    /// let v2 = Offset::from((-4, 5));
     /// assert_eq!(None, v2.rcoord(coord));
     /// ```
     pub fn rcoord(&self, (col, row): Coord) -> Option<Coord> {
@@ -145,32 +203,44 @@ impl Vector {
         }
     }
 
-    //////////////////////////////////
-    // Instantiation
-    //////////////////////////////////
-
-    /// Create a new `Vector` from the sum of cardinal vectors.
+    /// Switch the row and column offset components of an `Offset`.
     ///
     /// # Examples
     ///
     /// ```
-    /// use gridd::Vector;
+    /// use gridd::Offset;
+    ///
+    /// let mut vec = Offset::from((3, 2));
     ///
     /// assert_eq!(
-    ///     Vector::cardinal_sum(1, 0, -1, 0),
-    ///     Vector::NORTH - Vector::SOUTH
+    ///     Offset { col_offset: 3, row_offset: 2 },
+    ///     vec,
     /// );
     ///
+    /// vec.flip();
+    ///
     /// assert_eq!(
-    ///     Vector::cardinal_sum(0, 2, 0, 3),
-    ///     2 * Vector::EAST + 3 * Vector::WEST
+    ///     Offset { col_offset: 2, row_offset: 3 },
+    ///     vec,
     /// );
     /// ```
-    pub fn cardinal_sum(n: i32, e: i32, s: i32, w: i32) -> Self {
-        Vector::NORTH * n
-        + Vector::EAST * e
-        + Vector::SOUTH * s
-        + Vector::WEST * w
+    pub fn flip(&mut self) {
+        let new_c = self.row_offset;
+
+        self.row_offset = self.col_offset;
+        self.col_offset = new_c;
+    }
+
+    /// Rotate an `Offset` clockwise on a Cartesian plane.
+    pub fn rotate_cw(&mut self) {
+        self.flip();
+        self.row_offset = self.row_offset * (-1);
+    }
+
+    /// Rotate an `Offset` counterclockwise on a Cartesian plane.
+    pub fn rotate_cc(&mut self) {
+        self.flip();
+        self.col_offset = self.col_offset * (-1);
     }
 }
 
@@ -180,13 +250,13 @@ impl Vector {
 
 /// Two-dimensional, non-resizeable, zero-indexed grid.
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct StaticGrid<T> {
+pub struct Grid<T> {
     col_count: usize,
     row_count: usize,
     data: Vec<T>,
 }
 
-impl<T> StaticGrid<T>
+impl<T> Grid<T>
 where
     T: Copy,
 {
@@ -194,7 +264,7 @@ where
     // Instantiation
     //////////////////////////////////
 
-    /// Create a new `StaticGrid` populated with a default value.
+    /// Create a new `Grid` populated with a default value.
     pub fn new(col_count: usize, row_count: usize, default: T) -> Self
     {
         let capactiy = row_count * col_count;
@@ -206,7 +276,7 @@ where
         }
     }
 
-    /// Create a new `StaticGrid` in a square shape, populated with a default
+    /// Create a new `Grid` in a square shape, populated with a default
     /// value.
     pub fn square(side_len: usize, default: T) -> Self
     {
@@ -241,7 +311,7 @@ where
     }
 }
 
-impl<T> StaticGrid<T> {
+impl<T> Grid<T> {
     //////////////////////////////////
     // Utilities
     //////////////////////////////////
@@ -290,7 +360,7 @@ impl<T> StaticGrid<T> {
 
     /// Get an immutable reference to the cell with the given positional
     /// relationship to the provided coordinate.
-    pub fn rget(&self, anchor: Coord, vec: Vector) -> Option<&T> {
+    pub fn rget(&self, anchor: Coord, vec: Offset) -> Option<&T> {
         match vec.rcoord(anchor) {
             Some(coord) => self.get(coord),
             _ => None,
@@ -299,7 +369,7 @@ impl<T> StaticGrid<T> {
 
     /// Get a mutable reference to the cell with the given positional
     /// relationship to the provided coordinate.
-    pub fn rget_mut(&mut self, anchor: Coord, vec: Vector) -> Option<&mut T> {
+    pub fn rget_mut(&mut self, anchor: Coord, vec: Offset) -> Option<&mut T> {
         match vec.rcoord(anchor) {
             Some(coord) => self.get_mut(coord),
             _ => None,
@@ -318,7 +388,7 @@ impl<T> StaticGrid<T> {
 
     /// Set the value of a cell with the given positional relationship to
     /// the provided coordinate.
-    pub fn rset(&mut self, coord: Coord, vec: Vector, new_val: T) {
+    pub fn rset(&mut self, coord: Coord, vec: Offset, new_val: T) {
         if let Some(rcoord) = vec.rcoord(coord) {
             self.set(rcoord, new_val);
         }
@@ -344,7 +414,7 @@ mod tests {
 
     #[test]
     fn test_get_mut() {
-        let mut grid = StaticGrid::new(1, 1, 'a');
+        let mut grid = Grid::new(1, 1, 'a');
         let value = grid.get_mut((0, 0)).unwrap();
 
         assert_eq!(&'a', value);
@@ -354,7 +424,7 @@ mod tests {
 
     #[test]
     fn test_get_set() {
-        let mut grid = StaticGrid::new(5, 5, 'a');
+        let mut grid = Grid::new(5, 5, 'a');
 
         assert_eq!(Some(&'a'), grid.get((2, 3)));
         assert_eq!(Some(&'a'), grid.get((3, 3)));
@@ -371,26 +441,26 @@ mod tests {
 
     #[test]
     fn test_rget() {
-        let mut grid = StaticGrid::new(5, 5, 'a');
+        let mut grid = Grid::new(5, 5, 'a');
 
         assert_eq!(Some(&'a'), grid.get((2, 3)));
 
         grid.set((2, 3), 'b');
 
-        assert_eq!(Some(&'b'), grid.rget((2, 4), Vector::NORTH));
-        assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Vector::NORTH));
+        assert_eq!(Some(&'b'), grid.rget((2, 4), Offset::NORTH));
+        assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Offset::NORTH));
     }
 
     #[test]
     fn test_rset() {
-        let mut grid = StaticGrid::new(5, 5, 'a');
+        let mut grid = Grid::new(5, 5, 'a');
 
         assert_eq!(Some(&'a'), grid.get((2, 3)));
 
-        grid.rset((1, 1), Vector::from((1, 2)), 'b');
+        grid.rset((1, 1), Offset::from((1, 2)), 'b');
 
-        assert_eq!(Some(&'b'), grid.rget((2, 4), Vector::NORTH));
-        assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Vector::NORTH));
+        assert_eq!(Some(&'b'), grid.rget((2, 4), Offset::NORTH));
+        assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Offset::NORTH));
     }
 
     #[test]
@@ -398,7 +468,7 @@ mod tests {
         let src_col = 3;
         let src_row = 4;
 
-        let mut grid = StaticGrid::new(src_col, src_row, (0, 0));
+        let mut grid = Grid::new(src_col, src_row, (0, 0));
 
         for i in 0..src_col {
             for j in 0..src_row {
