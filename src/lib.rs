@@ -385,7 +385,7 @@ mod tests {
 
         assert_eq!(Some(&'a'), grid.get((2, 3)));
 
-        grid.rset((1, 3), Vector::from((1, 0)), 'b');
+        grid.rset((1, 1), Vector::from((1, 2)), 'b');
 
         assert_eq!(Some(&'b'), grid.rget((2, 4), Vector::NORTH));
         assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Vector::NORTH));
