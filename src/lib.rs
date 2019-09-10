@@ -314,6 +314,14 @@ impl<T> StaticGrid<T> {
         }
     }
 
+    /// Set the value of a cell with the given positional relationship to
+    /// another coordinate.
+    pub fn rset(&mut self, coord: Coord, vec: Vector, new_val: T) {
+        if let Some(rcoord) = vec.rcoord(coord) {
+            self.set(rcoord, new_val);
+        }
+    }
+
     //////////////////////////////////
     // Boolean Operations
     //////////////////////////////////
@@ -366,6 +374,18 @@ mod tests {
         assert_eq!(Some(&'a'), grid.get((2, 3)));
 
         grid.set((2, 3), 'b');
+
+        assert_eq!(Some(&'b'), grid.rget((2, 4), Vector::NORTH));
+        assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Vector::NORTH));
+    }
+
+    #[test]
+    fn test_rset() {
+        let mut grid = StaticGrid::new(5, 5, 'a');
+
+        assert_eq!(Some(&'a'), grid.get((2, 3)));
+
+        grid.rset((1, 3), Vector::from((1, 0)), 'b');
 
         assert_eq!(Some(&'b'), grid.rget((2, 4), Vector::NORTH));
         assert_eq!(Some(&mut 'b'), grid.rget_mut((2, 4), Vector::NORTH));
