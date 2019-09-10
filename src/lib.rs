@@ -1,4 +1,4 @@
-//! A generic, dirt-simple, two-dimensional grid.
+//! A minimalist implementation of two-dimensional grids.
 //!
 //! # Grids & Coordinates
 //! The `Grid` structure represents a two-dimensional grid containing

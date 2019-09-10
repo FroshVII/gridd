@@ -5,7 +5,7 @@ authors = ["cmarcbs7 <smith7@uchicago.edu>"]
 edition = "2018"
 documentation = "https://docs.rs/gridd"
 repository = "https://github.com/cmarcbs7/gridd"
-description = "A generic, dirt-simple, two-dimensional grid."
+description = "Minimalist implementation of two-dimensional grids."
 keywords = [
     "2d",
     "grid",
