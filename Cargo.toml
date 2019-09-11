@@ -1,10 +1,10 @@
 [package]
 name = "gridd"
 version = "0.3.1"
-authors = ["cmarcbs7 <smith7@uchicago.edu>"]
+authors = ["Frosh_VII <smith7@uchicago.edu>"]
 edition = "2018"
 documentation = "https://docs.rs/gridd"
-repository = "https://github.com/cmarcbs7/gridd"
+repository = "https://github.com/FroshVII/gridd"
 description = "Minimalist implementation of two-dimensional grids."
 keywords = [
     "2d",
